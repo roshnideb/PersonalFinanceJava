@@ -41,6 +41,13 @@ public class HomeController {
         return new ResponseEntity<>(id, HttpStatus.OK);
     }
 
+    //get user
+    @GetMapping("/user/{email}")
+    public ResponseEntity<User> getUser(@PathVariable String email) {
+        User user = financeRepository.getUser(email);
+        return new ResponseEntity<>(user,HttpStatus.OK);
+    }
+
     //get user's accounts
     @GetMapping("/{userid}/accounts")
     public ResponseEntity<List<Account>> getAccounts(@PathVariable int userid) {
@@ -86,6 +93,7 @@ public class HomeController {
     //create a category
     @PostMapping("/newcategory")
     public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+
         financeRepository.createCategory(category);
         return new ResponseEntity<>(category, HttpStatus.OK);
     }
@@ -119,11 +127,33 @@ public class HomeController {
     }
 
     //edit account
+    @PostMapping("/accounts/{accountid}/update/{newBalance}")
+    public ResponseEntity<Integer> updateAccountBalance(@PathVariable int accountid, double newBalance) {
+        financeRepository.updateAccountBalance(accountid, newBalance);
+        return new ResponseEntity<>(accountid, HttpStatus.OK);
+    }
 
     //edit category
+    @PostMapping("/categories/{categoryid}/update/{newBudget}")
+    public ResponseEntity<Integer> updateCategoryBudget(@PathVariable int categoryid, double newBudget) {
+        financeRepository.updateCategoryBudget(categoryid, newBudget);
+        return new ResponseEntity<>(categoryid, HttpStatus.OK);
+    }
 
     //create account
+    @GetMapping("/login/{email}/{password}")
+    public ResponseEntity<User> login(@PathVariable String email, @PathVariable String password) {
+        User user = financeRepository.login(email, password);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
 
     //log in
+    @PostMapping("/signup")
+    public ResponseEntity<User> signup(@RequestBody User user) {
+        User newUser = financeRepository.signUp(user);
+        return new ResponseEntity<>(newUser, HttpStatus.OK);
+    }
+
+
 
 }

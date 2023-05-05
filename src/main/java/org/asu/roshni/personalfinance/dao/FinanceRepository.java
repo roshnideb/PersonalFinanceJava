@@ -64,10 +64,14 @@ public interface FinanceRepository {
 
 
     //edit account
+    void updateAccountBalance(int accountid, double newBalance);
 
     //edit category
+    void updateCategoryBudget(int categoryid, double newBudget);
 
     //create account
+    User login(String email, String password);
 
     //log in
+    User signUp(User user);
 }

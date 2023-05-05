@@ -104,18 +104,25 @@ public class FRImplementation implements FinanceRepository {
 
     @Override
     public void createAccount(Account account) {
+        int accountId = financeConnection.queryForObject("select max(accountid) from Accounts ", Integer.class);
+        account.setAccountid(accountId+1);
         financeConnection.update("insert into Accounts values(?,?,?,?,?)",
                 account.getAccountid(), account.getUserid(), account.getName(), account.getBalance(), account.getType());
     }
 
     @Override
     public void createCategory(Category category) {
+        int categoryId = financeConnection.queryForObject("select max(categoryid) from Categories ", Integer.class);
+        category.setCategoryid(categoryId+1);
         financeConnection.update("insert into Categories values(?,?,?,?)",
                 category.getCategoryid(), category.getUserid(), category.getName(), category.getBudget());
     }
 
     @Override
     public void makeTransaction(Transaction transaction) {
+        int transactionId = financeConnection.queryForObject("select max(transactionid) from Transactions ", Integer.class);
+        transaction.setTransactionid(transactionId+1);
+
         double accountBalance = getAccount(transaction.getAccountid()).getBalance();
 
         double categoryBudget = getCategory(transaction.getCategoryid()).getBudget();
@@ -145,7 +152,7 @@ public class FRImplementation implements FinanceRepository {
 
     @Override
     public Category getCategory(int categoryid) {
-        return financeConnection.queryForObject("select * from Categories where cateogryid=?",
+        return financeConnection.queryForObject("select * from Categories where categoryid=?",
                 new Object[]{categoryid},
                 new RowMapper<Category>() {
                     @Override
@@ -185,8 +192,47 @@ public class FRImplementation implements FinanceRepository {
     @Override
     public double enoughCategoryBudget(double amount, double budget) {
         if (amount <= budget) {
-            return amount;
+            return budget-amount;
         }
         else return 0;
     }
+
+    @Override
+    public void updateAccountBalance(int accountid, double newBalance) {
+        financeConnection.update("update Accounts set balance = ? where accountid = ?", newBalance, accountid);
+    }
+
+    @Override
+    public void updateCategoryBudget(int categoryid, double newBudget) {
+        financeConnection.update("update Categories set budget = ? where categoryid = ?", newBudget, categoryid);
+    }
+
+    @Override
+    public User login(String email, String password) {
+
+        return financeConnection.queryForObject("select * from Users where email=? and password=?",
+                new Object[]{email, password},
+                new RowMapper<User>() {
+                    @Override
+                    public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        return new User(rs.getInt("userid"), rs.getString("password"), rs.getString("fname"), rs.getString("lname"), rs.getString("email"));
+                    }
+                });
+
+    }
+
+    @Override
+    public User signUp(User user) {
+        int userId = financeConnection.queryForObject("select max(userid) from Users ", Integer.class);
+        int count = financeConnection.queryForObject("select count(*) from Users where email = ? ",
+                new Object[]{user.getEmail()}, Integer.class);
+        if(count == 0) {
+            user.setUserid(userId + 1);
+            financeConnection.update("insert into Users values(?,?,?,?,?)",
+                    user.getUserid(), user.getPassword(), user.getFname(), user.getLname(), user.getEmail());
+        }
+        return user;
+    }
+
+
 }
